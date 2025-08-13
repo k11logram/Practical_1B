@@ -1,0 +1,1719 @@
+ARM GAS  C:\Users\LENOVO~1\AppData\Local\Temp\ccmCCnaC.s 			page 1
+
+
+   1              		.cpu cortex-m0
+   2              		.arch armv6s-m
+   3              		.fpu softvfp
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 1
+  11              		.eabi_attribute 34, 0
+  12              		.eabi_attribute 18, 4
+  13              		.file	"main.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.file 1 "Core/Src/main.c"
+  18              		.section	.text.MX_GPIO_Init,"ax",%progbits
+  19              		.align	1
+  20              		.syntax unified
+  21              		.code	16
+  22              		.thumb_func
+  24              	MX_GPIO_Init:
+  25              	.LFB42:
+   1:Core/Src/main.c **** /* USER CODE BEGIN Header */
+   2:Core/Src/main.c **** /**
+   3:Core/Src/main.c ****   ******************************************************************************
+   4:Core/Src/main.c ****   * @file           : main.c
+   5:Core/Src/main.c ****   * @brief          : Main program body
+   6:Core/Src/main.c ****   ******************************************************************************
+   7:Core/Src/main.c ****   * @attention
+   8:Core/Src/main.c ****   *
+   9:Core/Src/main.c ****   * Copyright (c) 2025 STMicroelectronics.
+  10:Core/Src/main.c ****   * All rights reserved.
+  11:Core/Src/main.c ****   *
+  12:Core/Src/main.c ****   * This software is licensed under terms that can be found in the LICENSE file
+  13:Core/Src/main.c ****   * in the root directory of this software component.
+  14:Core/Src/main.c ****   * If no LICENSE file comes with this software, it is provided AS-IS.
+  15:Core/Src/main.c ****   *
+  16:Core/Src/main.c ****   ******************************************************************************
+  17:Core/Src/main.c ****   */
+  18:Core/Src/main.c **** /* USER CODE END Header */
+  19:Core/Src/main.c **** /* Includes ------------------------------------------------------------------*/
+  20:Core/Src/main.c **** #include "main.h"
+  21:Core/Src/main.c **** 
+  22:Core/Src/main.c **** /* Private includes ----------------------------------------------------------*/
+  23:Core/Src/main.c **** /* USER CODE BEGIN Includes */
+  24:Core/Src/main.c **** #include <stdint.h>
+  25:Core/Src/main.c **** #include "stm32f0xx.h"
+  26:Core/Src/main.c **** /* USER CODE END Includes */
+  27:Core/Src/main.c **** 
+  28:Core/Src/main.c **** /* Private typedef -----------------------------------------------------------*/
+  29:Core/Src/main.c **** /* USER CODE BEGIN PTD */
+  30:Core/Src/main.c **** #define MAX_ITER 100
+  31:Core/Src/main.c **** /* USER CODE END PTD */
+  32:Core/Src/main.c **** 
+  33:Core/Src/main.c **** /* Private define ------------------------------------------------------------*/
+ARM GAS  C:\Users\LENOVO~1\AppData\Local\Temp\ccmCCnaC.s 			page 2
+
+
+  34:Core/Src/main.c **** /* USER CODE BEGIN PD */
+  35:Core/Src/main.c **** 
+  36:Core/Src/main.c **** /* USER CODE END PD */
+  37:Core/Src/main.c **** 
+  38:Core/Src/main.c **** /* Private macro -------------------------------------------------------------*/
+  39:Core/Src/main.c **** /* USER CODE BEGIN PM */
+  40:Core/Src/main.c **** 
+  41:Core/Src/main.c **** /* USER CODE END PM */
+  42:Core/Src/main.c **** 
+  43:Core/Src/main.c **** /* Private variables ---------------------------------------------------------*/
+  44:Core/Src/main.c **** 
+  45:Core/Src/main.c **** /* USER CODE BEGIN PV */
+  46:Core/Src/main.c **** //TODO: Define and initialise the global varibales required
+  47:Core/Src/main.c **** /*
+  48:Core/Src/main.c ****   start_time
+  49:Core/Src/main.c ****   end_time
+  50:Core/Src/main.c ****   execution_time 
+  51:Core/Src/main.c ****   checksum: should be uint64_t
+  52:Core/Src/main.c ****   initial width and height maybe or you might opt for an array??
+  53:Core/Src/main.c **** */
+  54:Core/Src/main.c **** #define SCALE 1000000LL // Fixed-point scale factor (S = 10^6)
+  55:Core/Src/main.c **** 
+  56:Core/Src/main.c **** uint32_t start_time = 0;//utilized in benchmarking
+  57:Core/Src/main.c **** uint32_t end_time = 0;//utilized in benchmarking
+  58:Core/Src/main.c **** uint32_t execution_time = 0;//measure of how long ittook for the program to finish executing
+  59:Core/Src/main.c **** uint64_t checksum = 0; //the total number of coordinates that fall into the mandelbrot set
+  60:Core/Src/main.c **** 
+  61:Core/Src/main.c **** int width  = 0;
+  62:Core/Src/main.c **** int height = 0;
+  63:Core/Src/main.c **** int maxIter = 0;
+  64:Core/Src/main.c **** 
+  65:Core/Src/main.c **** /* USER CODE END PV */
+  66:Core/Src/main.c **** 
+  67:Core/Src/main.c **** /* Private function prototypes -----------------------------------------------*/
+  68:Core/Src/main.c **** void SystemClock_Config(void);
+  69:Core/Src/main.c **** static void MX_GPIO_Init(void);
+  70:Core/Src/main.c **** /* USER CODE BEGIN PFP */
+  71:Core/Src/main.c **** uint64_t calculate_mandelbrot_fixed_point_arithmetic(int width, int height, int max_iterations);
+  72:Core/Src/main.c **** uint64_t calculate_mandelbrot_double(int width, int height, int max_iterations);
+  73:Core/Src/main.c **** 
+  74:Core/Src/main.c **** 
+  75:Core/Src/main.c **** /* USER CODE END PFP */
+  76:Core/Src/main.c **** 
+  77:Core/Src/main.c **** /* Private user code ---------------------------------------------------------*/
+  78:Core/Src/main.c **** /* USER CODE BEGIN 0 */
+  79:Core/Src/main.c **** 
+  80:Core/Src/main.c **** /* USER CODE END 0 */
+  81:Core/Src/main.c **** 
+  82:Core/Src/main.c **** /**
+  83:Core/Src/main.c ****   * @brief  The application entry point.
+  84:Core/Src/main.c ****   * @retval int
+  85:Core/Src/main.c ****   */
+  86:Core/Src/main.c **** int main(void)
+  87:Core/Src/main.c **** {
+  88:Core/Src/main.c ****   /* USER CODE BEGIN 1 */
+  89:Core/Src/main.c **** 
+  90:Core/Src/main.c ****   /* USER CODE END 1 */
+ARM GAS  C:\Users\LENOVO~1\AppData\Local\Temp\ccmCCnaC.s 			page 3
+
+
+  91:Core/Src/main.c **** 
+  92:Core/Src/main.c ****   /* MCU Configuration--------------------------------------------------------*/
+  93:Core/Src/main.c **** 
+  94:Core/Src/main.c ****   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+  95:Core/Src/main.c ****   HAL_Init();
+  96:Core/Src/main.c **** 
+  97:Core/Src/main.c ****   /* USER CODE BEGIN Init */
+  98:Core/Src/main.c **** 
+  99:Core/Src/main.c ****   /* USER CODE END Init */
+ 100:Core/Src/main.c **** 
+ 101:Core/Src/main.c ****   /* Configure the system clock */
+ 102:Core/Src/main.c ****   SystemClock_Config();
+ 103:Core/Src/main.c **** 
+ 104:Core/Src/main.c ****   /* USER CODE BEGIN SysInit */
+ 105:Core/Src/main.c **** 
+ 106:Core/Src/main.c ****   /* USER CODE END SysInit */
+ 107:Core/Src/main.c **** 
+ 108:Core/Src/main.c ****   /* Initialize all configured peripherals */
+ 109:Core/Src/main.c ****   MX_GPIO_Init();
+ 110:Core/Src/main.c ****   /* USER CODE BEGIN 2 */
+ 111:Core/Src/main.c ****   //TODO: Turn on LED 0 to signify the start of the operation
+ 112:Core/Src/main.c ****   HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_SET); // Turn on LED0 by setting pin.
+ 113:Core/Src/main.c **** 
+ 114:Core/Src/main.c ****   //TODO: Record the start time
+ 115:Core/Src/main.c ****   start_time = HAL_GetTick();
+ 116:Core/Src/main.c ****   
+ 117:Core/Src/main.c ****   
+ 118:Core/Src/main.c ****   //TODO: Call the Mandelbrot Function and store the output in the checksum variable defined initia
+ 119:Core/Src/main.c ****   checksum  = calculate_mandelbrot_fixed_point_arithmetic(128,128,MAX_ITER);
+ 120:Core/Src/main.c ****   
+ 121:Core/Src/main.c **** 
+ 122:Core/Src/main.c ****   //TODO: Record the end time
+ 123:Core/Src/main.c ****   end_time = HAL_GetTick();
+ 124:Core/Src/main.c ****   
+ 125:Core/Src/main.c **** 
+ 126:Core/Src/main.c ****   //TODO: Calculate the execution time
+ 127:Core/Src/main.c ****   execution_time = end_time - start_time;
+ 128:Core/Src/main.c ****   
+ 129:Core/Src/main.c **** 
+ 130:Core/Src/main.c ****   //TODO: Turn on LED 1 to signify the end of the operation
+ 131:Core/Src/main.c ****   HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_SET); // Turn on LED1 by setting pin.
+ 132:Core/Src/main.c **** 
+ 133:Core/Src/main.c ****   //TODO: Hold the LEDs on for a 1s delay
+ 134:Core/Src/main.c ****   HAL_Delay(0b1111101000);
+ 135:Core/Src/main.c **** 
+ 136:Core/Src/main.c ****   //TODO: Turn off the LEDs
+ 137:Core/Src/main.c ****   HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0|GPIO_PIN_1, GPIO_PIN_RESET); // Turning OFF LED's.
+ 138:Core/Src/main.c ****   
+ 139:Core/Src/main.c **** 
+ 140:Core/Src/main.c ****   /* USER CODE END 2 */
+ 141:Core/Src/main.c **** 
+ 142:Core/Src/main.c ****   /* Infinite loop */
+ 143:Core/Src/main.c ****   /* USER CODE BEGIN WHILE */
+ 144:Core/Src/main.c ****   while (1)
+ 145:Core/Src/main.c ****   {
+ 146:Core/Src/main.c ****     /* USER CODE END WHILE */
+ 147:Core/Src/main.c **** 
+ARM GAS  C:\Users\LENOVO~1\AppData\Local\Temp\ccmCCnaC.s 			page 4
+
+
+ 148:Core/Src/main.c ****     /* USER CODE BEGIN 3 */
+ 149:Core/Src/main.c ****   }
+ 150:Core/Src/main.c ****   /* USER CODE END 3 */
+ 151:Core/Src/main.c **** }
+ 152:Core/Src/main.c **** 
+ 153:Core/Src/main.c **** /**
+ 154:Core/Src/main.c ****   * @brief System Clock Configuration
+ 155:Core/Src/main.c ****   * @retval None
+ 156:Core/Src/main.c ****   */
+ 157:Core/Src/main.c **** void SystemClock_Config(void)
+ 158:Core/Src/main.c **** {
+ 159:Core/Src/main.c ****   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
+ 160:Core/Src/main.c ****   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+ 161:Core/Src/main.c **** 
+ 162:Core/Src/main.c ****   /** Initializes the RCC Oscillators according to the specified parameters
+ 163:Core/Src/main.c ****   * in the RCC_OscInitTypeDef structure.
+ 164:Core/Src/main.c ****   */
+ 165:Core/Src/main.c ****   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
+ 166:Core/Src/main.c ****   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+ 167:Core/Src/main.c ****   RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
+ 168:Core/Src/main.c ****   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
+ 169:Core/Src/main.c ****   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+ 170:Core/Src/main.c ****   {
+ 171:Core/Src/main.c ****     Error_Handler();
+ 172:Core/Src/main.c ****   }
+ 173:Core/Src/main.c **** 
+ 174:Core/Src/main.c ****   /** Initializes the CPU, AHB and APB buses clocks
+ 175:Core/Src/main.c ****   */
+ 176:Core/Src/main.c ****   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
+ 177:Core/Src/main.c ****                               |RCC_CLOCKTYPE_PCLK1;
+ 178:Core/Src/main.c ****   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI;
+ 179:Core/Src/main.c ****   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+ 180:Core/Src/main.c ****   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
+ 181:Core/Src/main.c **** 
+ 182:Core/Src/main.c ****   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
+ 183:Core/Src/main.c ****   {
+ 184:Core/Src/main.c ****     Error_Handler();
+ 185:Core/Src/main.c ****   }
+ 186:Core/Src/main.c **** }
+ 187:Core/Src/main.c **** 
+ 188:Core/Src/main.c **** /**
+ 189:Core/Src/main.c ****   * @brief GPIO Initialization Function
+ 190:Core/Src/main.c ****   * @param None
+ 191:Core/Src/main.c ****   * @retval None
+ 192:Core/Src/main.c ****   */
+ 193:Core/Src/main.c **** static void MX_GPIO_Init(void)
+ 194:Core/Src/main.c **** {
+  26              		.loc 1 194 1 view -0
+  27              		.cfi_startproc
+  28              		@ args = 0, pretend = 0, frame = 32
+  29              		@ frame_needed = 0, uses_anonymous_args = 0
+  30 0000 10B5     		push	{r4, lr}
+  31              	.LCFI0:
+  32              		.cfi_def_cfa_offset 8
+  33              		.cfi_offset 4, -8
+  34              		.cfi_offset 14, -4
+  35 0002 88B0     		sub	sp, sp, #32
+ARM GAS  C:\Users\LENOVO~1\AppData\Local\Temp\ccmCCnaC.s 			page 5
+
+
+  36              	.LCFI1:
+  37              		.cfi_def_cfa_offset 40
+ 195:Core/Src/main.c ****   GPIO_InitTypeDef GPIO_InitStruct = {0};
+  38              		.loc 1 195 3 view .LVU1
+  39              		.loc 1 195 20 is_stmt 0 view .LVU2
+  40 0004 1422     		movs	r2, #20
+  41 0006 0021     		movs	r1, #0
+  42 0008 03A8     		add	r0, sp, #12
+  43 000a FFF7FEFF 		bl	memset
+  44              	.LVL0:
+ 196:Core/Src/main.c **** /* USER CODE BEGIN MX_GPIO_Init_1 */
+ 197:Core/Src/main.c **** /* USER CODE END MX_GPIO_Init_1 */
+ 198:Core/Src/main.c **** 
+ 199:Core/Src/main.c ****   /* GPIO Ports Clock Enable */
+ 200:Core/Src/main.c ****   __HAL_RCC_GPIOB_CLK_ENABLE();
+  45              		.loc 1 200 3 is_stmt 1 view .LVU3
+  46              	.LBB4:
+  47              		.loc 1 200 3 view .LVU4
+  48              		.loc 1 200 3 view .LVU5
+  49 000e 134B     		ldr	r3, .L2
+  50 0010 5A69     		ldr	r2, [r3, #20]
+  51 0012 8021     		movs	r1, #128
+  52 0014 C902     		lsls	r1, r1, #11
+  53 0016 0A43     		orrs	r2, r1
+  54 0018 5A61     		str	r2, [r3, #20]
+  55              		.loc 1 200 3 view .LVU6
+  56 001a 5A69     		ldr	r2, [r3, #20]
+  57 001c 0A40     		ands	r2, r1
+  58 001e 0192     		str	r2, [sp, #4]
+  59              		.loc 1 200 3 view .LVU7
+  60 0020 019A     		ldr	r2, [sp, #4]
+  61              	.LBE4:
+  62              		.loc 1 200 3 view .LVU8
+ 201:Core/Src/main.c ****   __HAL_RCC_GPIOA_CLK_ENABLE();
+  63              		.loc 1 201 3 view .LVU9
+  64              	.LBB5:
+  65              		.loc 1 201 3 view .LVU10
+  66              		.loc 1 201 3 view .LVU11
+  67 0022 5A69     		ldr	r2, [r3, #20]
+  68 0024 8021     		movs	r1, #128
+  69 0026 8902     		lsls	r1, r1, #10
+  70 0028 0A43     		orrs	r2, r1
+  71 002a 5A61     		str	r2, [r3, #20]
+  72              		.loc 1 201 3 view .LVU12
+  73 002c 5B69     		ldr	r3, [r3, #20]
+  74 002e 0B40     		ands	r3, r1
+  75 0030 0293     		str	r3, [sp, #8]
+  76              		.loc 1 201 3 view .LVU13
+  77 0032 029B     		ldr	r3, [sp, #8]
+  78              	.LBE5:
+  79              		.loc 1 201 3 view .LVU14
+ 202:Core/Src/main.c **** 
+ 203:Core/Src/main.c ****   /*Configure GPIO pin Output Level */
+ 204:Core/Src/main.c ****   HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0|GPIO_PIN_1, GPIO_PIN_RESET);
+  80              		.loc 1 204 3 view .LVU15
+  81 0034 0A4C     		ldr	r4, .L2+4
+  82 0036 0022     		movs	r2, #0
+ARM GAS  C:\Users\LENOVO~1\AppData\Local\Temp\ccmCCnaC.s 			page 6
+
+
+  83 0038 0321     		movs	r1, #3
+  84 003a 2000     		movs	r0, r4
+  85 003c FFF7FEFF 		bl	HAL_GPIO_WritePin
+  86              	.LVL1:
+ 205:Core/Src/main.c **** 
+ 206:Core/Src/main.c ****   /*Configure GPIO pins : PB0 PB1 */
+ 207:Core/Src/main.c ****   GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1;
+  87              		.loc 1 207 3 view .LVU16
+  88              		.loc 1 207 23 is_stmt 0 view .LVU17
+  89 0040 0323     		movs	r3, #3
+  90 0042 0393     		str	r3, [sp, #12]
+ 208:Core/Src/main.c ****   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  91              		.loc 1 208 3 is_stmt 1 view .LVU18
+  92              		.loc 1 208 24 is_stmt 0 view .LVU19
+  93 0044 023B     		subs	r3, r3, #2
+  94 0046 0493     		str	r3, [sp, #16]
+ 209:Core/Src/main.c ****   GPIO_InitStruct.Pull = GPIO_NOPULL;
+  95              		.loc 1 209 3 is_stmt 1 view .LVU20
+  96              		.loc 1 209 24 is_stmt 0 view .LVU21
+  97 0048 0023     		movs	r3, #0
+  98 004a 0593     		str	r3, [sp, #20]
+ 210:Core/Src/main.c ****   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  99              		.loc 1 210 3 is_stmt 1 view .LVU22
+ 100              		.loc 1 210 25 is_stmt 0 view .LVU23
+ 101 004c 0693     		str	r3, [sp, #24]
+ 211:Core/Src/main.c ****   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+ 102              		.loc 1 211 3 is_stmt 1 view .LVU24
+ 103 004e 03A9     		add	r1, sp, #12
+ 104 0050 2000     		movs	r0, r4
+ 105 0052 FFF7FEFF 		bl	HAL_GPIO_Init
+ 106              	.LVL2:
+ 212:Core/Src/main.c **** 
+ 213:Core/Src/main.c **** /* USER CODE BEGIN MX_GPIO_Init_2 */
+ 214:Core/Src/main.c **** /* USER CODE END MX_GPIO_Init_2 */
+ 215:Core/Src/main.c **** }
+ 107              		.loc 1 215 1 is_stmt 0 view .LVU25
+ 108 0056 08B0     		add	sp, sp, #32
+ 109              		@ sp needed
+ 110 0058 10BD     		pop	{r4, pc}
+ 111              	.L3:
+ 112 005a C046     		.align	2
+ 113              	.L2:
+ 114 005c 00100240 		.word	1073876992
+ 115 0060 00040048 		.word	1207960576
+ 116              		.cfi_endproc
+ 117              	.LFE42:
+ 119              		.global	__aeabi_lmul
+ 120              		.global	__aeabi_ldivmod
+ 121              		.section	.text.calculate_mandelbrot_fixed_point_arithmetic,"ax",%progbits
+ 122              		.align	1
+ 123              		.global	calculate_mandelbrot_fixed_point_arithmetic
+ 124              		.syntax unified
+ 125              		.code	16
+ 126              		.thumb_func
+ 128              	calculate_mandelbrot_fixed_point_arithmetic:
+ 129              	.LVL3:
+ 130              	.LFB43:
+ARM GAS  C:\Users\LENOVO~1\AppData\Local\Temp\ccmCCnaC.s 			page 7
+
+
+ 216:Core/Src/main.c **** 
+ 217:Core/Src/main.c **** /* USER CODE BEGIN 4 */
+ 218:Core/Src/main.c **** //TODO: Mandelbroat using variable type integers and fixed point arithmetic
+ 219:Core/Src/main.c **** uint64_t calculate_mandelbrot_fixed_point_arithmetic(int width, int height, int max_iterations){
+ 131              		.loc 1 219 96 is_stmt 1 view -0
+ 132              		.cfi_startproc
+ 133              		@ args = 0, pretend = 0, frame = 80
+ 134              		@ frame_needed = 0, uses_anonymous_args = 0
+ 135              		.loc 1 219 96 is_stmt 0 view .LVU27
+ 136 0000 F0B5     		push	{r4, r5, r6, r7, lr}
+ 137              	.LCFI2:
+ 138              		.cfi_def_cfa_offset 20
+ 139              		.cfi_offset 4, -20
+ 140              		.cfi_offset 5, -16
+ 141              		.cfi_offset 6, -12
+ 142              		.cfi_offset 7, -8
+ 143              		.cfi_offset 14, -4
+ 144 0002 DE46     		mov	lr, fp
+ 145 0004 5746     		mov	r7, r10
+ 146 0006 4E46     		mov	r6, r9
+ 147 0008 4546     		mov	r5, r8
+ 148 000a E0B5     		push	{r5, r6, r7, lr}
+ 149              	.LCFI3:
+ 150              		.cfi_def_cfa_offset 36
+ 151              		.cfi_offset 8, -36
+ 152              		.cfi_offset 9, -32
+ 153              		.cfi_offset 10, -28
+ 154              		.cfi_offset 11, -24
+ 155 000c 95B0     		sub	sp, sp, #84
+ 156              	.LCFI4:
+ 157              		.cfi_def_cfa_offset 120
+ 158 000e 0F90     		str	r0, [sp, #60]
+ 159 0010 1391     		str	r1, [sp, #76]
+ 160 0012 9246     		mov	r10, r2
+ 220:Core/Src/main.c ****   uint64_t mandelbrot_sum = 0;
+ 161              		.loc 1 220 3 is_stmt 1 view .LVU28
+ 162              	.LVL4:
+ 221:Core/Src/main.c ****     //TODO: Complete the function implementation
+ 222:Core/Src/main.c **** 
+ 223:Core/Src/main.c ****    /*we are going through the complex plane multiple times
+ 224:Core/Src/main.c ****    any coordinate left after that iteration falls under the mandelbrot set*/
+ 225:Core/Src/main.c ****     for(int y = 0 ; y < height; y++){
+ 163              		.loc 1 225 5 view .LVU29
+ 164              	.LBB6:
+ 165              		.loc 1 225 9 view .LVU30
+ 166              		.loc 1 225 13 is_stmt 0 view .LVU31
+ 167 0014 0023     		movs	r3, #0
+ 168 0016 1293     		str	r3, [sp, #72]
+ 169              	.LBE6:
+ 220:Core/Src/main.c ****   uint64_t mandelbrot_sum = 0;
+ 170              		.loc 1 220 12 view .LVU32
+ 171 0018 0023     		movs	r3, #0
+ 172 001a 0024     		movs	r4, #0
+ 173 001c 1093     		str	r3, [sp, #64]
+ 174 001e 1194     		str	r4, [sp, #68]
+ 175              	.LBB12:
+ 176              		.loc 1 225 5 view .LVU33
+ARM GAS  C:\Users\LENOVO~1\AppData\Local\Temp\ccmCCnaC.s 			page 8
+
+
+ 177 0020 8AE0     		b	.L5
+ 178              	.LVL5:
+ 179              	.L8:
+ 180              	.LBB7:
+ 181              	.LBB8:
+ 182              	.LBB9:
+ 226:Core/Src/main.c ****     	for(int x = 0 ; x < width ; x++ ){
+ 227:Core/Src/main.c ****     		int64_t x0 = (((int64_t)((x * 3500000LL) / width)) - 2500000LL); // we are trying keeping the
+ 228:Core/Src/main.c ****     		int64_t y0 = (((int64_t)((y * 2000000LL) / height)) - 1000000LL);//we are keeping or taking t
+ 229:Core/Src/main.c ****     		int64_t xi = 0; int64_t yi = 0;
+ 230:Core/Src/main.c ****     		int iteration = 0;
+ 231:Core/Src/main.c ****     		while((iteration <  max_iterations) && ((((xi * xi)/ SCALE) + ((yi * yi)/ SCALE)) <= 4000000L
+ 232:Core/Src/main.c ****     			int temp  = ((xi * xi)/ SCALE) - ((yi * yi)/ SCALE);//This is the imaginary representation o
+ 183              		.loc 1 232 8 is_stmt 1 view .LVU34
+ 184              		.loc 1 232 39 is_stmt 0 view .LVU35
+ 185 0022 009B     		ldr	r3, [sp]
+ 186 0024 1B1A     		subs	r3, r3, r0
+ 187 0026 9946     		mov	r9, r3
+ 188              	.LVL6:
+ 233:Core/Src/main.c ****     			yi = ((2LL*(xi * yi)/ SCALE) + y0);//this is the real z^2
+ 189              		.loc 1 233 8 is_stmt 1 view .LVU36
+ 190              		.loc 1 233 23 is_stmt 0 view .LVU37
+ 191 0028 029A     		ldr	r2, [sp, #8]
+ 192 002a 039B     		ldr	r3, [sp, #12]
+ 193 002c 3000     		movs	r0, r6
+ 194 002e 3900     		movs	r1, r7
+ 195 0030 FFF7FEFF 		bl	__aeabi_lmul
+ 196              	.LVL7:
+ 197              		.loc 1 233 28 view .LVU38
+ 198 0034 494A     		ldr	r2, .L15
+ 199 0036 0023     		movs	r3, #0
+ 200 0038 FFF7FEFF 		bl	__aeabi_ldivmod
+ 201              	.LVL8:
+ 202              		.loc 1 233 11 view .LVU39
+ 203 003c 089C     		ldr	r4, [sp, #32]
+ 204 003e 099D     		ldr	r5, [sp, #36]
+ 205 0040 2418     		adds	r4, r4, r0
+ 206 0042 4D41     		adcs	r5, r5, r1
+ 207 0044 0294     		str	r4, [sp, #8]
+ 208 0046 0395     		str	r5, [sp, #12]
+ 209              	.LVL9:
+ 234:Core/Src/main.c ****     			xi = temp + x0;//this is the real representation of z^2 +c
+ 210              		.loc 1 234 8 is_stmt 1 view .LVU40
+ 211              		.loc 1 234 18 is_stmt 0 view .LVU41
+ 212 0048 4B46     		mov	r3, r9
+ 213 004a 0493     		str	r3, [sp, #16]
+ 214 004c DB17     		asrs	r3, r3, #31
+ 215 004e 0593     		str	r3, [sp, #20]
+ 216              		.loc 1 234 11 view .LVU42
+ 217 0050 049E     		ldr	r6, [sp, #16]
+ 218 0052 059F     		ldr	r7, [sp, #20]
+ 219              	.LVL10:
+ 220              		.loc 1 234 11 view .LVU43
+ 221 0054 069A     		ldr	r2, [sp, #24]
+ 222 0056 079B     		ldr	r3, [sp, #28]
+ 223 0058 B618     		adds	r6, r6, r2
+ 224 005a 5F41     		adcs	r7, r7, r3
+ARM GAS  C:\Users\LENOVO~1\AppData\Local\Temp\ccmCCnaC.s 			page 9
+
+
+ 225              	.LVL11:
+ 235:Core/Src/main.c **** 
+ 236:Core/Src/main.c ****     			iteration++;//keeping track of the number of times we have done iterations
+ 226              		.loc 1 236 8 is_stmt 1 view .LVU44
+ 227              		.loc 1 236 17 is_stmt 0 view .LVU45
+ 228 005c 0123     		movs	r3, #1
+ 229 005e 9C46     		mov	ip, r3
+ 230 0060 E044     		add	r8, r8, ip
+ 231              	.LVL12:
+ 232              	.L6:
+ 233              		.loc 1 236 17 view .LVU46
+ 234              	.LBE9:
+ 231:Core/Src/main.c ****     			int temp  = ((xi * xi)/ SCALE) - ((yi * yi)/ SCALE);//This is the imaginary representation o
+ 235              		.loc 1 231 43 is_stmt 1 view .LVU47
+ 236 0062 D045     		cmp	r8, r10
+ 237 0064 26DA     		bge	.L7
+ 231:Core/Src/main.c ****     			int temp  = ((xi * xi)/ SCALE) - ((yi * yi)/ SCALE);//This is the imaginary representation o
+ 238              		.loc 1 231 53 is_stmt 0 discriminator 1 view .LVU48
+ 239 0066 3200     		movs	r2, r6
+ 240 0068 3B00     		movs	r3, r7
+ 241 006a 3000     		movs	r0, r6
+ 242 006c 3900     		movs	r1, r7
+ 243 006e FFF7FEFF 		bl	__aeabi_lmul
+ 244              	.LVL13:
+ 231:Core/Src/main.c ****     			int temp  = ((xi * xi)/ SCALE) - ((yi * yi)/ SCALE);//This is the imaginary representation o
+ 245              		.loc 1 231 58 discriminator 1 view .LVU49
+ 246 0072 3B4A     		ldr	r2, .L15+4
+ 247 0074 0023     		movs	r3, #0
+ 248 0076 FFF7FEFF 		bl	__aeabi_ldivmod
+ 249              	.LVL14:
+ 250 007a 0090     		str	r0, [sp]
+ 251 007c 0191     		str	r1, [sp, #4]
+ 231:Core/Src/main.c ****     			int temp  = ((xi * xi)/ SCALE) - ((yi * yi)/ SCALE);//This is the imaginary representation o
+ 252              		.loc 1 231 74 discriminator 1 view .LVU50
+ 253 007e 029A     		ldr	r2, [sp, #8]
+ 254 0080 039B     		ldr	r3, [sp, #12]
+ 255 0082 1000     		movs	r0, r2
+ 256 0084 1900     		movs	r1, r3
+ 257 0086 FFF7FEFF 		bl	__aeabi_lmul
+ 258              	.LVL15:
+ 231:Core/Src/main.c ****     			int temp  = ((xi * xi)/ SCALE) - ((yi * yi)/ SCALE);//This is the imaginary representation o
+ 259              		.loc 1 231 79 discriminator 1 view .LVU51
+ 260 008a 354A     		ldr	r2, .L15+4
+ 261 008c 0023     		movs	r3, #0
+ 262 008e FFF7FEFF 		bl	__aeabi_ldivmod
+ 263              	.LVL16:
+ 264 0092 0200     		movs	r2, r0
+ 265 0094 0B00     		movs	r3, r1
+ 266 0096 1000     		movs	r0, r2
+ 267 0098 1900     		movs	r1, r3
+ 231:Core/Src/main.c ****     			int temp  = ((xi * xi)/ SCALE) - ((yi * yi)/ SCALE);//This is the imaginary representation o
+ 268              		.loc 1 231 67 discriminator 1 view .LVU52
+ 269 009a 009A     		ldr	r2, [sp]
+ 270 009c 019B     		ldr	r3, [sp, #4]
+ 271 009e 1218     		adds	r2, r2, r0
+ 272 00a0 4B41     		adcs	r3, r3, r1
+ 273 00a2 0A92     		str	r2, [sp, #40]
+ARM GAS  C:\Users\LENOVO~1\AppData\Local\Temp\ccmCCnaC.s 			page 10
+
+
+ 274 00a4 0B93     		str	r3, [sp, #44]
+ 231:Core/Src/main.c ****     			int temp  = ((xi * xi)/ SCALE) - ((yi * yi)/ SCALE);//This is the imaginary representation o
+ 275              		.loc 1 231 43 discriminator 1 view .LVU53
+ 276 00a6 002B     		cmp	r3, #0
+ 277 00a8 04DC     		bgt	.L7
+ 278 00aa BAD1     		bne	.L8
+ 279 00ac 2D4B     		ldr	r3, .L15+8
+ 280 00ae 0A9A     		ldr	r2, [sp, #40]
+ 281 00b0 9A42     		cmp	r2, r3
+ 282 00b2 B6D9     		bls	.L8
+ 283              	.L7:
+ 237:Core/Src/main.c ****     		}
+ 238:Core/Src/main.c ****     		mandelbrot_sum += iteration;
+ 284              		.loc 1 238 7 is_stmt 1 view .LVU54
+ 285              		.loc 1 238 22 is_stmt 0 view .LVU55
+ 286 00b4 4346     		mov	r3, r8
+ 287 00b6 0C93     		str	r3, [sp, #48]
+ 288 00b8 DB17     		asrs	r3, r3, #31
+ 289 00ba 0D93     		str	r3, [sp, #52]
+ 290 00bc 109B     		ldr	r3, [sp, #64]
+ 291 00be 119C     		ldr	r4, [sp, #68]
+ 292 00c0 0C99     		ldr	r1, [sp, #48]
+ 293 00c2 0D9A     		ldr	r2, [sp, #52]
+ 294 00c4 5B18     		adds	r3, r3, r1
+ 295 00c6 5441     		adcs	r4, r4, r2
+ 296 00c8 1093     		str	r3, [sp, #64]
+ 297 00ca 1194     		str	r4, [sp, #68]
+ 298              	.LVL17:
+ 299              		.loc 1 238 22 view .LVU56
+ 300              	.LBE8:
+ 226:Core/Src/main.c ****     		int64_t x0 = (((int64_t)((x * 3500000LL) / width)) - 2500000LL); // we are trying keeping the
+ 301              		.loc 1 226 35 is_stmt 1 discriminator 2 view .LVU57
+ 302 00cc 0E9B     		ldr	r3, [sp, #56]
+ 303              	.LVL18:
+ 226:Core/Src/main.c ****     		int64_t x0 = (((int64_t)((x * 3500000LL) / width)) - 2500000LL); // we are trying keeping the
+ 304              		.loc 1 226 35 is_stmt 0 discriminator 2 view .LVU58
+ 305 00ce 0133     		adds	r3, r3, #1
+ 306 00d0 0E93     		str	r3, [sp, #56]
+ 307              	.LVL19:
+ 308              	.L11:
+ 226:Core/Src/main.c ****     		int64_t x0 = (((int64_t)((x * 3500000LL) / width)) - 2500000LL); // we are trying keeping the
+ 309              		.loc 1 226 24 is_stmt 1 discriminator 1 view .LVU59
+ 310 00d2 0E9B     		ldr	r3, [sp, #56]
+ 311 00d4 0F9A     		ldr	r2, [sp, #60]
+ 312 00d6 9342     		cmp	r3, r2
+ 313 00d8 2BDA     		bge	.L13
+ 314              	.LBB10:
+ 227:Core/Src/main.c ****     		int64_t y0 = (((int64_t)((y * 2000000LL) / height)) - 1000000LL);//we are keeping or taking t
+ 315              		.loc 1 227 7 view .LVU60
+ 227:Core/Src/main.c ****     		int64_t y0 = (((int64_t)((y * 2000000LL) / height)) - 1000000LL);//we are keeping or taking t
+ 316              		.loc 1 227 35 is_stmt 0 view .LVU61
+ 317 00da 0E98     		ldr	r0, [sp, #56]
+ 318 00dc C117     		asrs	r1, r0, #31
+ 319 00de 224A     		ldr	r2, .L15+12
+ 320 00e0 0023     		movs	r3, #0
+ 321 00e2 FFF7FEFF 		bl	__aeabi_lmul
+ 322              	.LVL20:
+ARM GAS  C:\Users\LENOVO~1\AppData\Local\Temp\ccmCCnaC.s 			page 11
+
+
+ 227:Core/Src/main.c ****     		int64_t y0 = (((int64_t)((y * 2000000LL) / height)) - 1000000LL);//we are keeping or taking t
+ 323              		.loc 1 227 22 view .LVU62
+ 324 00e6 0F9A     		ldr	r2, [sp, #60]
+ 325 00e8 D317     		asrs	r3, r2, #31
+ 326 00ea FFF7FEFF 		bl	__aeabi_ldivmod
+ 327              	.LVL21:
+ 227:Core/Src/main.c ****     		int64_t y0 = (((int64_t)((y * 2000000LL) / height)) - 1000000LL);//we are keeping or taking t
+ 328              		.loc 1 227 15 view .LVU63
+ 329 00ee 1F4A     		ldr	r2, .L15+16
+ 330 00f0 0123     		movs	r3, #1
+ 331 00f2 5B42     		rsbs	r3, r3, #0
+ 332 00f4 8018     		adds	r0, r0, r2
+ 333 00f6 5941     		adcs	r1, r1, r3
+ 334 00f8 0690     		str	r0, [sp, #24]
+ 335 00fa 0791     		str	r1, [sp, #28]
+ 336              	.LVL22:
+ 228:Core/Src/main.c ****     		int64_t xi = 0; int64_t yi = 0;
+ 337              		.loc 1 228 7 is_stmt 1 view .LVU64
+ 228:Core/Src/main.c ****     		int64_t xi = 0; int64_t yi = 0;
+ 338              		.loc 1 228 35 is_stmt 0 view .LVU65
+ 339 00fc 1298     		ldr	r0, [sp, #72]
+ 340              	.LVL23:
+ 228:Core/Src/main.c ****     		int64_t xi = 0; int64_t yi = 0;
+ 341              		.loc 1 228 35 view .LVU66
+ 342 00fe C117     		asrs	r1, r0, #31
+ 343 0100 1B4A     		ldr	r2, .L15+20
+ 344 0102 0023     		movs	r3, #0
+ 345 0104 FFF7FEFF 		bl	__aeabi_lmul
+ 346              	.LVL24:
+ 228:Core/Src/main.c ****     		int64_t xi = 0; int64_t yi = 0;
+ 347              		.loc 1 228 22 view .LVU67
+ 348 0108 5B46     		mov	r3, fp
+ 349 010a DB17     		asrs	r3, r3, #31
+ 350 010c 5A46     		mov	r2, fp
+ 351 010e FFF7FEFF 		bl	__aeabi_ldivmod
+ 352              	.LVL25:
+ 228:Core/Src/main.c ****     		int64_t xi = 0; int64_t yi = 0;
+ 353              		.loc 1 228 15 view .LVU68
+ 354 0112 184A     		ldr	r2, .L15+24
+ 355 0114 0123     		movs	r3, #1
+ 356 0116 5B42     		rsbs	r3, r3, #0
+ 357 0118 8018     		adds	r0, r0, r2
+ 358 011a 5941     		adcs	r1, r1, r3
+ 359 011c 0890     		str	r0, [sp, #32]
+ 360 011e 0991     		str	r1, [sp, #36]
+ 361              	.LVL26:
+ 229:Core/Src/main.c ****     		int iteration = 0;
+ 362              		.loc 1 229 7 is_stmt 1 view .LVU69
+ 229:Core/Src/main.c ****     		int iteration = 0;
+ 363              		.loc 1 229 23 view .LVU70
+ 230:Core/Src/main.c ****     		while((iteration <  max_iterations) && ((((xi * xi)/ SCALE) + ((yi * yi)/ SCALE)) <= 4000000L
+ 364              		.loc 1 230 7 view .LVU71
+ 231:Core/Src/main.c ****     			int temp  = ((xi * xi)/ SCALE) - ((yi * yi)/ SCALE);//This is the imaginary representation o
+ 365              		.loc 1 231 7 view .LVU72
+ 230:Core/Src/main.c ****     		while((iteration <  max_iterations) && ((((xi * xi)/ SCALE) + ((yi * yi)/ SCALE)) <= 4000000L
+ 366              		.loc 1 230 11 is_stmt 0 view .LVU73
+ 367 0120 0023     		movs	r3, #0
+ARM GAS  C:\Users\LENOVO~1\AppData\Local\Temp\ccmCCnaC.s 			page 12
+
+
+ 368 0122 9846     		mov	r8, r3
+ 229:Core/Src/main.c ****     		int iteration = 0;
+ 369              		.loc 1 229 31 view .LVU74
+ 370 0124 0024     		movs	r4, #0
+ 371 0126 0025     		movs	r5, #0
+ 229:Core/Src/main.c ****     		int iteration = 0;
+ 372              		.loc 1 229 15 view .LVU75
+ 373 0128 0026     		movs	r6, #0
+ 374 012a 0027     		movs	r7, #0
+ 375 012c 0294     		str	r4, [sp, #8]
+ 376 012e 0395     		str	r5, [sp, #12]
+ 231:Core/Src/main.c ****     			int temp  = ((xi * xi)/ SCALE) - ((yi * yi)/ SCALE);//This is the imaginary representation o
+ 377              		.loc 1 231 12 view .LVU76
+ 378 0130 97E7     		b	.L6
+ 379              	.LVL27:
+ 380              	.L13:
+ 231:Core/Src/main.c ****     			int temp  = ((xi * xi)/ SCALE) - ((yi * yi)/ SCALE);//This is the imaginary representation o
+ 381              		.loc 1 231 12 view .LVU77
+ 382              	.LBE10:
+ 383              	.LBE7:
+ 225:Core/Src/main.c ****     	for(int x = 0 ; x < width ; x++ ){
+ 384              		.loc 1 225 34 is_stmt 1 discriminator 2 view .LVU78
+ 385 0132 129B     		ldr	r3, [sp, #72]
+ 386              	.LVL28:
+ 225:Core/Src/main.c ****     	for(int x = 0 ; x < width ; x++ ){
+ 387              		.loc 1 225 34 is_stmt 0 discriminator 2 view .LVU79
+ 388 0134 0133     		adds	r3, r3, #1
+ 389 0136 1293     		str	r3, [sp, #72]
+ 390              	.LVL29:
+ 391              	.L5:
+ 225:Core/Src/main.c ****     	for(int x = 0 ; x < width ; x++ ){
+ 392              		.loc 1 225 23 is_stmt 1 discriminator 1 view .LVU80
+ 393 0138 129B     		ldr	r3, [sp, #72]
+ 394 013a 139A     		ldr	r2, [sp, #76]
+ 395 013c 9342     		cmp	r3, r2
+ 396 013e 04DA     		bge	.L14
+ 397              	.LBB11:
+ 226:Core/Src/main.c ****     		int64_t x0 = (((int64_t)((x * 3500000LL) / width)) - 2500000LL); // we are trying keeping the
+ 398              		.loc 1 226 14 is_stmt 0 view .LVU81
+ 399 0140 0023     		movs	r3, #0
+ 400 0142 0E93     		str	r3, [sp, #56]
+ 401 0144 139B     		ldr	r3, [sp, #76]
+ 402 0146 9B46     		mov	fp, r3
+ 403 0148 C3E7     		b	.L11
+ 404              	.LVL30:
+ 405              	.L14:
+ 226:Core/Src/main.c ****     		int64_t x0 = (((int64_t)((x * 3500000LL) / width)) - 2500000LL); // we are trying keeping the
+ 406              		.loc 1 226 14 view .LVU82
+ 407              	.LBE11:
+ 408              	.LBE12:
+ 239:Core/Src/main.c ****     	}
+ 240:Core/Src/main.c ****     }
+ 241:Core/Src/main.c ****     return mandelbrot_sum;
+ 409              		.loc 1 241 5 is_stmt 1 view .LVU83
+ 242:Core/Src/main.c **** 
+ 243:Core/Src/main.c **** }
+ 410              		.loc 1 243 1 is_stmt 0 view .LVU84
+ARM GAS  C:\Users\LENOVO~1\AppData\Local\Temp\ccmCCnaC.s 			page 13
+
+
+ 411 014a 1098     		ldr	r0, [sp, #64]
+ 412 014c 1199     		ldr	r1, [sp, #68]
+ 413 014e 15B0     		add	sp, sp, #84
+ 414              		@ sp needed
+ 415              	.LVL31:
+ 416              		.loc 1 243 1 view .LVU85
+ 417 0150 F0BC     		pop	{r4, r5, r6, r7}
+ 418 0152 BB46     		mov	fp, r7
+ 419 0154 B246     		mov	r10, r6
+ 420 0156 A946     		mov	r9, r5
+ 421 0158 A046     		mov	r8, r4
+ 422 015a F0BD     		pop	{r4, r5, r6, r7, pc}
+ 423              	.L16:
+ 424              		.align	2
+ 425              	.L15:
+ 426 015c 20A10700 		.word	500000
+ 427 0160 40420F00 		.word	1000000
+ 428 0164 00093D00 		.word	4000000
+ 429 0168 E0673500 		.word	3500000
+ 430 016c 60DAD9FF 		.word	-2500000
+ 431 0170 80841E00 		.word	2000000
+ 432 0174 C0BDF0FF 		.word	-1000000
+ 433              		.cfi_endproc
+ 434              	.LFE43:
+ 436              		.global	__aeabi_idiv
+ 437              		.global	__aeabi_i2d
+ 438              		.global	__aeabi_dmul
+ 439              		.global	__aeabi_dsub
+ 440              		.global	__aeabi_dadd
+ 441              		.global	__aeabi_dcmpgt
+ 442              		.global	__aeabi_dcmple
+ 443              		.global	__aeabi_ul2d
+ 444              		.global	__aeabi_d2ulz
+ 445              		.section	.text.calculate_mandelbrot_double,"ax",%progbits
+ 446              		.align	1
+ 447              		.global	calculate_mandelbrot_double
+ 448              		.syntax unified
+ 449              		.code	16
+ 450              		.thumb_func
+ 452              	calculate_mandelbrot_double:
+ 453              	.LVL32:
+ 454              	.LFB44:
+ 244:Core/Src/main.c **** 
+ 245:Core/Src/main.c **** //TODO: Mandelbroat using variable type double(double precision)
+ 246:Core/Src/main.c **** uint64_t calculate_mandelbrot_double(int width, int height, int max_iterations){
+ 455              		.loc 1 246 80 is_stmt 1 view -0
+ 456              		.cfi_startproc
+ 457              		@ args = 0, pretend = 0, frame = 56
+ 458              		@ frame_needed = 0, uses_anonymous_args = 0
+ 459              		.loc 1 246 80 is_stmt 0 view .LVU87
+ 460 0000 F0B5     		push	{r4, r5, r6, r7, lr}
+ 461              	.LCFI5:
+ 462              		.cfi_def_cfa_offset 20
+ 463              		.cfi_offset 4, -20
+ 464              		.cfi_offset 5, -16
+ 465              		.cfi_offset 6, -12
+ 466              		.cfi_offset 7, -8
+ARM GAS  C:\Users\LENOVO~1\AppData\Local\Temp\ccmCCnaC.s 			page 14
+
+
+ 467              		.cfi_offset 14, -4
+ 468 0002 DE46     		mov	lr, fp
+ 469 0004 5746     		mov	r7, r10
+ 470 0006 4E46     		mov	r6, r9
+ 471 0008 4546     		mov	r5, r8
+ 472 000a E0B5     		push	{r5, r6, r7, lr}
+ 473              	.LCFI6:
+ 474              		.cfi_def_cfa_offset 36
+ 475              		.cfi_offset 8, -36
+ 476              		.cfi_offset 9, -32
+ 477              		.cfi_offset 10, -28
+ 478              		.cfi_offset 11, -24
+ 479 000c 8FB0     		sub	sp, sp, #60
+ 480              	.LCFI7:
+ 481              		.cfi_def_cfa_offset 96
+ 482 000e 8246     		mov	r10, r0
+ 483 0010 0C00     		movs	r4, r1
+ 484 0012 9046     		mov	r8, r2
+ 247:Core/Src/main.c ****     uint64_t mandelbrot_sum = 0;
+ 485              		.loc 1 247 5 is_stmt 1 view .LVU88
+ 486              	.LVL33:
+ 248:Core/Src/main.c ****     //TODO: Complete the function implementation
+ 249:Core/Src/main.c ****     //everything  is in (double precision)
+ 250:Core/Src/main.c ****    /*we are going through the complex plane multiple times
+ 251:Core/Src/main.c ****    any coordinate left after that iteration falls under the mandelbrot set*/
+ 252:Core/Src/main.c ****     for(int y = 0 ; y < height ; y++){
+ 487              		.loc 1 252 5 view .LVU89
+ 488              	.LBB13:
+ 489              		.loc 1 252 9 view .LVU90
+ 490              		.loc 1 252 13 is_stmt 0 view .LVU91
+ 491 0014 0023     		movs	r3, #0
+ 492              	.LBE13:
+ 247:Core/Src/main.c ****     uint64_t mandelbrot_sum = 0;
+ 493              		.loc 1 247 14 view .LVU92
+ 494 0016 0B93     		str	r3, [sp, #44]
+ 495 0018 0C93     		str	r3, [sp, #48]
+ 496 001a 0D93     		str	r3, [sp, #52]
+ 497              	.LBB19:
+ 498              		.loc 1 252 5 view .LVU93
+ 499 001c 8DE0     		b	.L18
+ 500              	.LVL34:
+ 501              	.L22:
+ 502              	.LBB14:
+ 503              	.LBB15:
+ 504              	.LBB16:
+ 253:Core/Src/main.c ****     	for(int x = 0 ; x < width ; x++ ){
+ 254:Core/Src/main.c ****     		double x0  = ((((double)(x / width)) * 3.5 ) - 2.5);// we are keeping the set in between [-2.
+ 255:Core/Src/main.c ****     		double y0  = ((((double)(y / width)) * 2.0 ) - 1.0);//we are keeping or taking the cooridante
+ 256:Core/Src/main.c ****     		double xi = 0.0; double yi = 0.0;
+ 257:Core/Src/main.c ****     		double iteration =  0;//keeping track of the number of times we have done iterations
+ 258:Core/Src/main.c ****     		while((iteration < max_iterations) && (((xi * xi) + (yi * yi)) <= 4.0)){
+ 259:Core/Src/main.c ****     			double temp = ((xi * xi) - (yi * yi));//This is the imaginary representation of Z^2
+ 505              		.loc 1 259 8 is_stmt 1 view .LVU94
+ 506              		.loc 1 259 15 is_stmt 0 view .LVU95
+ 507 001e 2200     		movs	r2, r4
+ 508 0020 2B00     		movs	r3, r5
+ 509 0022 0498     		ldr	r0, [sp, #16]
+ARM GAS  C:\Users\LENOVO~1\AppData\Local\Temp\ccmCCnaC.s 			page 15
+
+
+ 510 0024 0599     		ldr	r1, [sp, #20]
+ 511 0026 FFF7FEFF 		bl	__aeabi_dsub
+ 512              	.LVL35:
+ 513 002a 0400     		movs	r4, r0
+ 514 002c 0D00     		movs	r5, r1
+ 515              	.LVL36:
+ 260:Core/Src/main.c ****     			yi  = (2.0 * (xi * yi) + y0);//this is the real z^2
+ 516              		.loc 1 260 8 is_stmt 1 view .LVU96
+ 517              		.loc 1 260 25 is_stmt 0 view .LVU97
+ 518 002e 029A     		ldr	r2, [sp, #8]
+ 519 0030 039B     		ldr	r3, [sp, #12]
+ 520 0032 3000     		movs	r0, r6
+ 521 0034 3900     		movs	r1, r7
+ 522 0036 FFF7FEFF 		bl	__aeabi_dmul
+ 523              	.LVL37:
+ 524              		.loc 1 260 19 view .LVU98
+ 525 003a 0200     		movs	r2, r0
+ 526 003c 0B00     		movs	r3, r1
+ 527 003e FFF7FEFF 		bl	__aeabi_dadd
+ 528              	.LVL38:
+ 529              		.loc 1 260 12 view .LVU99
+ 530 0042 089A     		ldr	r2, [sp, #32]
+ 531 0044 099B     		ldr	r3, [sp, #36]
+ 532 0046 FFF7FEFF 		bl	__aeabi_dadd
+ 533              	.LVL39:
+ 534 004a 0290     		str	r0, [sp, #8]
+ 535 004c 0391     		str	r1, [sp, #12]
+ 536              	.LVL40:
+ 261:Core/Src/main.c ****     			xi = (temp + x0);//this is the real representation of z^2 +c
+ 537              		.loc 1 261 8 is_stmt 1 view .LVU100
+ 538              		.loc 1 261 11 is_stmt 0 view .LVU101
+ 539 004e 2200     		movs	r2, r4
+ 540 0050 2B00     		movs	r3, r5
+ 541 0052 0698     		ldr	r0, [sp, #24]
+ 542 0054 0799     		ldr	r1, [sp, #28]
+ 543              	.LVL41:
+ 544              		.loc 1 261 11 view .LVU102
+ 545 0056 FFF7FEFF 		bl	__aeabi_dadd
+ 546              	.LVL42:
+ 547 005a 0600     		movs	r6, r0
+ 548              	.LVL43:
+ 549              		.loc 1 261 11 view .LVU103
+ 550 005c 0F00     		movs	r7, r1
+ 551              	.LVL44:
+ 262:Core/Src/main.c ****     			iteration++;
+ 552              		.loc 1 262 8 is_stmt 1 view .LVU104
+ 553              		.loc 1 262 17 is_stmt 0 view .LVU105
+ 554 005e 0022     		movs	r2, #0
+ 555 0060 3F4B     		ldr	r3, .L29
+ 556 0062 0098     		ldr	r0, [sp]
+ 557 0064 0199     		ldr	r1, [sp, #4]
+ 558 0066 FFF7FEFF 		bl	__aeabi_dadd
+ 559              	.LVL45:
+ 560 006a 0090     		str	r0, [sp]
+ 561 006c 0191     		str	r1, [sp, #4]
+ 562              	.LVL46:
+ 563              	.L19:
+ARM GAS  C:\Users\LENOVO~1\AppData\Local\Temp\ccmCCnaC.s 			page 16
+
+
+ 564              		.loc 1 262 17 view .LVU106
+ 565              	.LBE16:
+ 258:Core/Src/main.c ****     			double temp = ((xi * xi) - (yi * yi));//This is the imaginary representation of Z^2
+ 566              		.loc 1 258 42 is_stmt 1 view .LVU107
+ 258:Core/Src/main.c ****     			double temp = ((xi * xi) - (yi * yi));//This is the imaginary representation of Z^2
+ 567              		.loc 1 258 24 is_stmt 0 view .LVU108
+ 568 006e 4046     		mov	r0, r8
+ 569 0070 FFF7FEFF 		bl	__aeabi_i2d
+ 570              	.LVL47:
+ 258:Core/Src/main.c ****     			double temp = ((xi * xi) - (yi * yi));//This is the imaginary representation of Z^2
+ 571              		.loc 1 258 42 view .LVU109
+ 572 0074 009A     		ldr	r2, [sp]
+ 573 0076 019B     		ldr	r3, [sp, #4]
+ 574 0078 FFF7FEFF 		bl	__aeabi_dcmpgt
+ 575              	.LVL48:
+ 576 007c 0028     		cmp	r0, #0
+ 577 007e 1DD0     		beq	.L20
+ 258:Core/Src/main.c ****     			double temp = ((xi * xi) - (yi * yi));//This is the imaginary representation of Z^2
+ 578              		.loc 1 258 51 discriminator 1 view .LVU110
+ 579 0080 3200     		movs	r2, r6
+ 580 0082 3B00     		movs	r3, r7
+ 581 0084 3000     		movs	r0, r6
+ 582 0086 3900     		movs	r1, r7
+ 583 0088 FFF7FEFF 		bl	__aeabi_dmul
+ 584              	.LVL49:
+ 585 008c 0490     		str	r0, [sp, #16]
+ 586 008e 0591     		str	r1, [sp, #20]
+ 258:Core/Src/main.c ****     			double temp = ((xi * xi) - (yi * yi));//This is the imaginary representation of Z^2
+ 587              		.loc 1 258 63 discriminator 1 view .LVU111
+ 588 0090 029C     		ldr	r4, [sp, #8]
+ 589 0092 039D     		ldr	r5, [sp, #12]
+ 590 0094 2200     		movs	r2, r4
+ 591 0096 2B00     		movs	r3, r5
+ 592 0098 2000     		movs	r0, r4
+ 593 009a 2900     		movs	r1, r5
+ 594 009c FFF7FEFF 		bl	__aeabi_dmul
+ 595              	.LVL50:
+ 596 00a0 0400     		movs	r4, r0
+ 597 00a2 0D00     		movs	r5, r1
+ 258:Core/Src/main.c ****     			double temp = ((xi * xi) - (yi * yi));//This is the imaginary representation of Z^2
+ 598              		.loc 1 258 57 discriminator 1 view .LVU112
+ 599 00a4 0200     		movs	r2, r0
+ 600 00a6 0B00     		movs	r3, r1
+ 601 00a8 0498     		ldr	r0, [sp, #16]
+ 602 00aa 0599     		ldr	r1, [sp, #20]
+ 603 00ac FFF7FEFF 		bl	__aeabi_dadd
+ 604              	.LVL51:
+ 258:Core/Src/main.c ****     			double temp = ((xi * xi) - (yi * yi));//This is the imaginary representation of Z^2
+ 605              		.loc 1 258 42 discriminator 1 view .LVU113
+ 606 00b0 0022     		movs	r2, #0
+ 607 00b2 2C4B     		ldr	r3, .L29+4
+ 608 00b4 FFF7FEFF 		bl	__aeabi_dcmple
+ 609              	.LVL52:
+ 610 00b8 0028     		cmp	r0, #0
+ 611 00ba B0D1     		bne	.L22
+ 612              	.L20:
+ 263:Core/Src/main.c ****     		}
+ARM GAS  C:\Users\LENOVO~1\AppData\Local\Temp\ccmCCnaC.s 			page 17
+
+
+ 264:Core/Src/main.c ****     		mandelbrot_sum += iteration;
+ 613              		.loc 1 264 22 view .LVU114
+ 614 00bc 5446     		mov	r4, r10
+ 615 00be 5D46     		mov	r5, fp
+ 616              		.loc 1 264 7 is_stmt 1 view .LVU115
+ 617              		.loc 1 264 22 is_stmt 0 view .LVU116
+ 618 00c0 0B98     		ldr	r0, [sp, #44]
+ 619 00c2 0C99     		ldr	r1, [sp, #48]
+ 620 00c4 FFF7FEFF 		bl	__aeabi_ul2d
+ 621              	.LVL53:
+ 622 00c8 009A     		ldr	r2, [sp]
+ 623 00ca 019B     		ldr	r3, [sp, #4]
+ 624 00cc FFF7FEFF 		bl	__aeabi_dadd
+ 625              	.LVL54:
+ 626 00d0 FFF7FEFF 		bl	__aeabi_d2ulz
+ 627              	.LVL55:
+ 628 00d4 0B90     		str	r0, [sp, #44]
+ 629              	.LVL56:
+ 630              		.loc 1 264 22 view .LVU117
+ 631 00d6 0C91     		str	r1, [sp, #48]
+ 632              	.LVL57:
+ 633              		.loc 1 264 22 view .LVU118
+ 634              	.LBE15:
+ 253:Core/Src/main.c ****     		double x0  = ((((double)(x / width)) * 3.5 ) - 2.5);// we are keeping the set in between [-2.
+ 635              		.loc 1 253 35 is_stmt 1 discriminator 2 view .LVU119
+ 636 00d8 0134     		adds	r4, r4, #1
+ 637              	.LVL58:
+ 638              	.L24:
+ 253:Core/Src/main.c ****     		double x0  = ((((double)(x / width)) * 3.5 ) - 2.5);// we are keeping the set in between [-2.
+ 639              		.loc 1 253 24 discriminator 1 view .LVU120
+ 640 00da AC42     		cmp	r4, r5
+ 641 00dc 28DA     		bge	.L27
+ 642              	.LBB17:
+ 254:Core/Src/main.c ****     		double y0  = ((((double)(y / width)) * 2.0 ) - 1.0);//we are keeping or taking the cooridante
+ 643              		.loc 1 254 7 view .LVU121
+ 254:Core/Src/main.c ****     		double y0  = ((((double)(y / width)) * 2.0 ) - 1.0);//we are keeping or taking the cooridante
+ 644              		.loc 1 254 34 is_stmt 0 view .LVU122
+ 645 00de 2900     		movs	r1, r5
+ 646 00e0 2000     		movs	r0, r4
+ 647 00e2 FFF7FEFF 		bl	__aeabi_idiv
+ 648              	.LVL59:
+ 254:Core/Src/main.c ****     		double y0  = ((((double)(y / width)) * 2.0 ) - 1.0);//we are keeping or taking the cooridante
+ 649              		.loc 1 254 23 view .LVU123
+ 650 00e6 FFF7FEFF 		bl	__aeabi_i2d
+ 651              	.LVL60:
+ 254:Core/Src/main.c ****     		double y0  = ((((double)(y / width)) * 2.0 ) - 1.0);//we are keeping or taking the cooridante
+ 652              		.loc 1 254 44 view .LVU124
+ 653 00ea 0022     		movs	r2, #0
+ 654 00ec 1E4B     		ldr	r3, .L29+8
+ 655 00ee FFF7FEFF 		bl	__aeabi_dmul
+ 656              	.LVL61:
+ 254:Core/Src/main.c ****     		double y0  = ((((double)(y / width)) * 2.0 ) - 1.0);//we are keeping or taking the cooridante
+ 657              		.loc 1 254 14 view .LVU125
+ 658 00f2 0022     		movs	r2, #0
+ 659 00f4 1D4B     		ldr	r3, .L29+12
+ 660 00f6 FFF7FEFF 		bl	__aeabi_dsub
+ 661              	.LVL62:
+ARM GAS  C:\Users\LENOVO~1\AppData\Local\Temp\ccmCCnaC.s 			page 18
+
+
+ 662 00fa 0690     		str	r0, [sp, #24]
+ 663 00fc 0791     		str	r1, [sp, #28]
+ 664              	.LVL63:
+ 255:Core/Src/main.c ****     		double xi = 0.0; double yi = 0.0;
+ 665              		.loc 1 255 7 is_stmt 1 view .LVU126
+ 255:Core/Src/main.c ****     		double xi = 0.0; double yi = 0.0;
+ 666              		.loc 1 255 34 is_stmt 0 view .LVU127
+ 667 00fe 2900     		movs	r1, r5
+ 668 0100 0D98     		ldr	r0, [sp, #52]
+ 669              	.LVL64:
+ 255:Core/Src/main.c ****     		double xi = 0.0; double yi = 0.0;
+ 670              		.loc 1 255 34 view .LVU128
+ 671 0102 FFF7FEFF 		bl	__aeabi_idiv
+ 672              	.LVL65:
+ 255:Core/Src/main.c ****     		double xi = 0.0; double yi = 0.0;
+ 673              		.loc 1 255 23 view .LVU129
+ 674 0106 FFF7FEFF 		bl	__aeabi_i2d
+ 675              	.LVL66:
+ 255:Core/Src/main.c ****     		double xi = 0.0; double yi = 0.0;
+ 676              		.loc 1 255 44 view .LVU130
+ 677 010a 0200     		movs	r2, r0
+ 678 010c 0B00     		movs	r3, r1
+ 679 010e FFF7FEFF 		bl	__aeabi_dadd
+ 680              	.LVL67:
+ 255:Core/Src/main.c ****     		double xi = 0.0; double yi = 0.0;
+ 681              		.loc 1 255 14 view .LVU131
+ 682 0112 0022     		movs	r2, #0
+ 683 0114 124B     		ldr	r3, .L29
+ 684 0116 FFF7FEFF 		bl	__aeabi_dsub
+ 685              	.LVL68:
+ 686 011a 0890     		str	r0, [sp, #32]
+ 687 011c 0991     		str	r1, [sp, #36]
+ 688              	.LVL69:
+ 256:Core/Src/main.c ****     		double iteration =  0;//keeping track of the number of times we have done iterations
+ 689              		.loc 1 256 7 is_stmt 1 view .LVU132
+ 256:Core/Src/main.c ****     		double iteration =  0;//keeping track of the number of times we have done iterations
+ 690              		.loc 1 256 24 view .LVU133
+ 257:Core/Src/main.c ****     		while((iteration < max_iterations) && (((xi * xi) + (yi * yi)) <= 4.0)){
+ 691              		.loc 1 257 7 view .LVU134
+ 258:Core/Src/main.c ****     			double temp = ((xi * xi) - (yi * yi));//This is the imaginary representation of Z^2
+ 692              		.loc 1 258 7 view .LVU135
+ 257:Core/Src/main.c ****     		while((iteration < max_iterations) && (((xi * xi) + (yi * yi)) <= 4.0)){
+ 693              		.loc 1 257 14 is_stmt 0 view .LVU136
+ 694 011e 0026     		movs	r6, #0
+ 695 0120 0027     		movs	r7, #0
+ 696 0122 0096     		str	r6, [sp]
+ 697 0124 0197     		str	r7, [sp, #4]
+ 256:Core/Src/main.c ****     		double iteration =  0;//keeping track of the number of times we have done iterations
+ 698              		.loc 1 256 31 view .LVU137
+ 699 0126 0296     		str	r6, [sp, #8]
+ 700 0128 0397     		str	r7, [sp, #12]
+ 701 012a A246     		mov	r10, r4
+ 702 012c AB46     		mov	fp, r5
+ 258:Core/Src/main.c ****     			double temp = ((xi * xi) - (yi * yi));//This is the imaginary representation of Z^2
+ 703              		.loc 1 258 12 view .LVU138
+ 704 012e 9EE7     		b	.L19
+ 705              	.LVL70:
+ARM GAS  C:\Users\LENOVO~1\AppData\Local\Temp\ccmCCnaC.s 			page 19
+
+
+ 706              	.L27:
+ 258:Core/Src/main.c ****     			double temp = ((xi * xi) - (yi * yi));//This is the imaginary representation of Z^2
+ 707              		.loc 1 258 12 view .LVU139
+ 708              	.LBE17:
+ 709              	.LBE14:
+ 252:Core/Src/main.c ****     	for(int x = 0 ; x < width ; x++ ){
+ 710              		.loc 1 252 35 discriminator 2 view .LVU140
+ 711 0130 AA46     		mov	r10, r5
+ 712 0132 4C46     		mov	r4, r9
+ 713              	.LVL71:
+ 252:Core/Src/main.c ****     	for(int x = 0 ; x < width ; x++ ){
+ 714              		.loc 1 252 35 is_stmt 1 discriminator 2 view .LVU141
+ 715 0134 0D9B     		ldr	r3, [sp, #52]
+ 716 0136 0133     		adds	r3, r3, #1
+ 717 0138 0D93     		str	r3, [sp, #52]
+ 718              	.LVL72:
+ 719              	.L18:
+ 252:Core/Src/main.c ****     	for(int x = 0 ; x < width ; x++ ){
+ 720              		.loc 1 252 23 discriminator 1 view .LVU142
+ 721 013a 0D9B     		ldr	r3, [sp, #52]
+ 722 013c A342     		cmp	r3, r4
+ 723 013e 06DA     		bge	.L28
+ 724              	.LBB18:
+ 253:Core/Src/main.c ****     		double x0  = ((((double)(x / width)) * 3.5 ) - 2.5);// we are keeping the set in between [-2.
+ 725              		.loc 1 253 14 is_stmt 0 view .LVU143
+ 726 0140 0023     		movs	r3, #0
+ 727 0142 9946     		mov	r9, r3
+ 728 0144 5546     		mov	r5, r10
+ 729 0146 2300     		movs	r3, r4
+ 730 0148 4C46     		mov	r4, r9
+ 731              	.LVL73:
+ 253:Core/Src/main.c ****     		double x0  = ((((double)(x / width)) * 3.5 ) - 2.5);// we are keeping the set in between [-2.
+ 732              		.loc 1 253 14 view .LVU144
+ 733 014a 9946     		mov	r9, r3
+ 734 014c C5E7     		b	.L24
+ 735              	.LVL74:
+ 736              	.L28:
+ 253:Core/Src/main.c ****     		double x0  = ((((double)(x / width)) * 3.5 ) - 2.5);// we are keeping the set in between [-2.
+ 737              		.loc 1 253 14 view .LVU145
+ 738              	.LBE18:
+ 739              	.LBE19:
+ 265:Core/Src/main.c ****     	}
+ 266:Core/Src/main.c ****     }
+ 267:Core/Src/main.c ****     return mandelbrot_sum;
+ 740              		.loc 1 267 5 is_stmt 1 view .LVU146
+ 268:Core/Src/main.c **** }
+ 741              		.loc 1 268 1 is_stmt 0 view .LVU147
+ 742 014e 0B98     		ldr	r0, [sp, #44]
+ 743 0150 0C99     		ldr	r1, [sp, #48]
+ 744 0152 0FB0     		add	sp, sp, #60
+ 745              		@ sp needed
+ 746              	.LVL75:
+ 747              	.LVL76:
+ 748              	.LVL77:
+ 749              		.loc 1 268 1 view .LVU148
+ 750 0154 F0BC     		pop	{r4, r5, r6, r7}
+ 751 0156 BB46     		mov	fp, r7
+ARM GAS  C:\Users\LENOVO~1\AppData\Local\Temp\ccmCCnaC.s 			page 20
+
+
+ 752 0158 B246     		mov	r10, r6
+ 753 015a A946     		mov	r9, r5
+ 754 015c A046     		mov	r8, r4
+ 755 015e F0BD     		pop	{r4, r5, r6, r7, pc}
+ 756              	.L30:
+ 757              		.align	2
+ 758              	.L29:
+ 759 0160 0000F03F 		.word	1072693248
+ 760 0164 00001040 		.word	1074790400
+ 761 0168 00000C40 		.word	1074528256
+ 762 016c 00000440 		.word	1074003968
+ 763              		.cfi_endproc
+ 764              	.LFE44:
+ 766              		.section	.text.Error_Handler,"ax",%progbits
+ 767              		.align	1
+ 768              		.global	Error_Handler
+ 769              		.syntax unified
+ 770              		.code	16
+ 771              		.thumb_func
+ 773              	Error_Handler:
+ 774              	.LFB45:
+ 269:Core/Src/main.c **** 
+ 270:Core/Src/main.c **** /* USER CODE END 4 */
+ 271:Core/Src/main.c **** 
+ 272:Core/Src/main.c **** /**
+ 273:Core/Src/main.c ****   * @brief  This function is executed in case of error occurrence.
+ 274:Core/Src/main.c ****   * @retval None
+ 275:Core/Src/main.c ****   */
+ 276:Core/Src/main.c **** void Error_Handler(void)
+ 277:Core/Src/main.c **** {
+ 775              		.loc 1 277 1 is_stmt 1 view -0
+ 776              		.cfi_startproc
+ 777              		@ Volatile: function does not return.
+ 778              		@ args = 0, pretend = 0, frame = 0
+ 779              		@ frame_needed = 0, uses_anonymous_args = 0
+ 780              		@ link register save eliminated.
+ 278:Core/Src/main.c ****   /* USER CODE BEGIN Error_Handler_Debug */
+ 279:Core/Src/main.c ****   /* User can add his own implementation to report the HAL error return state */
+ 280:Core/Src/main.c ****   __disable_irq();
+ 781              		.loc 1 280 3 view .LVU150
+ 782              	.LBB20:
+ 783              	.LBI20:
+ 784              		.file 2 "Drivers/CMSIS/Include/cmsis_gcc.h"
+   1:Drivers/CMSIS/Include/cmsis_gcc.h **** /**************************************************************************//**
+   2:Drivers/CMSIS/Include/cmsis_gcc.h ****  * @file     cmsis_gcc.h
+   3:Drivers/CMSIS/Include/cmsis_gcc.h ****  * @brief    CMSIS compiler GCC header file
+   4:Drivers/CMSIS/Include/cmsis_gcc.h ****  * @version  V5.0.4
+   5:Drivers/CMSIS/Include/cmsis_gcc.h ****  * @date     09. April 2018
+   6:Drivers/CMSIS/Include/cmsis_gcc.h ****  ******************************************************************************/
+   7:Drivers/CMSIS/Include/cmsis_gcc.h **** /*
+   8:Drivers/CMSIS/Include/cmsis_gcc.h ****  * Copyright (c) 2009-2018 Arm Limited. All rights reserved.
+   9:Drivers/CMSIS/Include/cmsis_gcc.h ****  *
+  10:Drivers/CMSIS/Include/cmsis_gcc.h ****  * SPDX-License-Identifier: Apache-2.0
+  11:Drivers/CMSIS/Include/cmsis_gcc.h ****  *
+  12:Drivers/CMSIS/Include/cmsis_gcc.h ****  * Licensed under the Apache License, Version 2.0 (the License); you may
+  13:Drivers/CMSIS/Include/cmsis_gcc.h ****  * not use this file except in compliance with the License.
+  14:Drivers/CMSIS/Include/cmsis_gcc.h ****  * You may obtain a copy of the License at
+ARM GAS  C:\Users\LENOVO~1\AppData\Local\Temp\ccmCCnaC.s 			page 21
+
+
+  15:Drivers/CMSIS/Include/cmsis_gcc.h ****  *
+  16:Drivers/CMSIS/Include/cmsis_gcc.h ****  * www.apache.org/licenses/LICENSE-2.0
+  17:Drivers/CMSIS/Include/cmsis_gcc.h ****  *
+  18:Drivers/CMSIS/Include/cmsis_gcc.h ****  * Unless required by applicable law or agreed to in writing, software
+  19:Drivers/CMSIS/Include/cmsis_gcc.h ****  * distributed under the License is distributed on an AS IS BASIS, WITHOUT
+  20:Drivers/CMSIS/Include/cmsis_gcc.h ****  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  21:Drivers/CMSIS/Include/cmsis_gcc.h ****  * See the License for the specific language governing permissions and
+  22:Drivers/CMSIS/Include/cmsis_gcc.h ****  * limitations under the License.
+  23:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+  24:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+  25:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef __CMSIS_GCC_H
+  26:Drivers/CMSIS/Include/cmsis_gcc.h **** #define __CMSIS_GCC_H
+  27:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+  28:Drivers/CMSIS/Include/cmsis_gcc.h **** /* ignore some GCC warnings */
+  29:Drivers/CMSIS/Include/cmsis_gcc.h **** #pragma GCC diagnostic push
+  30:Drivers/CMSIS/Include/cmsis_gcc.h **** #pragma GCC diagnostic ignored "-Wsign-conversion"
+  31:Drivers/CMSIS/Include/cmsis_gcc.h **** #pragma GCC diagnostic ignored "-Wconversion"
+  32:Drivers/CMSIS/Include/cmsis_gcc.h **** #pragma GCC diagnostic ignored "-Wunused-parameter"
+  33:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+  34:Drivers/CMSIS/Include/cmsis_gcc.h **** /* Fallback for __has_builtin */
+  35:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef __has_builtin
+  36:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __has_builtin(x) (0)
+  37:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  38:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+  39:Drivers/CMSIS/Include/cmsis_gcc.h **** /* CMSIS compiler specific defines */
+  40:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __ASM
+  41:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __ASM                                  __asm
+  42:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  43:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __INLINE
+  44:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __INLINE                               inline
+  45:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  46:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __STATIC_INLINE
+  47:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __STATIC_INLINE                        static inline
+  48:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  49:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __STATIC_FORCEINLINE                 
+  50:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __STATIC_FORCEINLINE                   __attribute__((always_inline)) static inline
+  51:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif                                           
+  52:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __NO_RETURN
+  53:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __NO_RETURN                            __attribute__((__noreturn__))
+  54:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  55:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __USED
+  56:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __USED                                 __attribute__((used))
+  57:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  58:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __WEAK
+  59:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __WEAK                                 __attribute__((weak))
+  60:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  61:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __PACKED
+  62:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __PACKED                               __attribute__((packed, aligned(1)))
+  63:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  64:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __PACKED_STRUCT
+  65:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __PACKED_STRUCT                        struct __attribute__((packed, aligned(1)))
+  66:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  67:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __PACKED_UNION
+  68:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __PACKED_UNION                         union __attribute__((packed, aligned(1)))
+  69:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  70:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __UNALIGNED_UINT32        /* deprecated */
+  71:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic push
+ARM GAS  C:\Users\LENOVO~1\AppData\Local\Temp\ccmCCnaC.s 			page 22
+
+
+  72:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wpacked"
+  73:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wattributes"
+  74:Drivers/CMSIS/Include/cmsis_gcc.h ****   struct __attribute__((packed)) T_UINT32 { uint32_t v; };
+  75:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic pop
+  76:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __UNALIGNED_UINT32(x)                  (((struct T_UINT32 *)(x))->v)
+  77:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  78:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __UNALIGNED_UINT16_WRITE
+  79:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic push
+  80:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wpacked"
+  81:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wattributes"
+  82:Drivers/CMSIS/Include/cmsis_gcc.h ****   __PACKED_STRUCT T_UINT16_WRITE { uint16_t v; };
+  83:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic pop
+  84:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __UNALIGNED_UINT16_WRITE(addr, val)    (void)((((struct T_UINT16_WRITE *)(void *)(addr))-
+  85:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  86:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __UNALIGNED_UINT16_READ
+  87:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic push
+  88:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wpacked"
+  89:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wattributes"
+  90:Drivers/CMSIS/Include/cmsis_gcc.h ****   __PACKED_STRUCT T_UINT16_READ { uint16_t v; };
+  91:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic pop
+  92:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __UNALIGNED_UINT16_READ(addr)          (((const struct T_UINT16_READ *)(const void *)(add
+  93:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  94:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __UNALIGNED_UINT32_WRITE
+  95:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic push
+  96:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wpacked"
+  97:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wattributes"
+  98:Drivers/CMSIS/Include/cmsis_gcc.h ****   __PACKED_STRUCT T_UINT32_WRITE { uint32_t v; };
+  99:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic pop
+ 100:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __UNALIGNED_UINT32_WRITE(addr, val)    (void)((((struct T_UINT32_WRITE *)(void *)(addr))-
+ 101:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+ 102:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __UNALIGNED_UINT32_READ
+ 103:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic push
+ 104:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wpacked"
+ 105:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wattributes"
+ 106:Drivers/CMSIS/Include/cmsis_gcc.h ****   __PACKED_STRUCT T_UINT32_READ { uint32_t v; };
+ 107:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic pop
+ 108:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __UNALIGNED_UINT32_READ(addr)          (((const struct T_UINT32_READ *)(const void *)(add
+ 109:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+ 110:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __ALIGNED
+ 111:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __ALIGNED(x)                           __attribute__((aligned(x)))
+ 112:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+ 113:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __RESTRICT
+ 114:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __RESTRICT                             __restrict
+ 115:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+ 116:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 117:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 118:Drivers/CMSIS/Include/cmsis_gcc.h **** /* ###########################  Core Function Access  ########################### */
+ 119:Drivers/CMSIS/Include/cmsis_gcc.h **** /** \ingroup  CMSIS_Core_FunctionInterface
+ 120:Drivers/CMSIS/Include/cmsis_gcc.h ****     \defgroup CMSIS_Core_RegAccFunctions CMSIS Core Register Access Functions
+ 121:Drivers/CMSIS/Include/cmsis_gcc.h ****   @{
+ 122:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 123:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 124:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 125:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Enable IRQ Interrupts
+ 126:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Enables IRQ interrupts by clearing the I-bit in the CPSR.
+ 127:Drivers/CMSIS/Include/cmsis_gcc.h ****            Can only be executed in Privileged modes.
+ 128:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ARM GAS  C:\Users\LENOVO~1\AppData\Local\Temp\ccmCCnaC.s 			page 23
+
+
+ 129:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE void __enable_irq(void)
+ 130:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 131:Drivers/CMSIS/Include/cmsis_gcc.h ****   __ASM volatile ("cpsie i" : : : "memory");
+ 132:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 133:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 134:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 135:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 136:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Disable IRQ Interrupts
+ 137:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Disables IRQ interrupts by setting the I-bit in the CPSR.
+ 138:Drivers/CMSIS/Include/cmsis_gcc.h ****            Can only be executed in Privileged modes.
+ 139:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 140:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE void __disable_irq(void)
+ 785              		.loc 2 140 27 view .LVU151
+ 786              	.LBB21:
+ 141:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 142:Drivers/CMSIS/Include/cmsis_gcc.h ****   __ASM volatile ("cpsid i" : : : "memory");
+ 787              		.loc 2 142 3 view .LVU152
+ 788              		.syntax divided
+ 789              	@ 142 "Drivers/CMSIS/Include/cmsis_gcc.h" 1
+ 790 0000 72B6     		cpsid i
+ 791              	@ 0 "" 2
+ 792              		.thumb
+ 793              		.syntax unified
+ 794              	.L32:
+ 795              	.LBE21:
+ 796              	.LBE20:
+ 281:Core/Src/main.c ****   while (1)
+ 797              		.loc 1 281 3 view .LVU153
+ 282:Core/Src/main.c ****   {
+ 283:Core/Src/main.c ****   }
+ 798              		.loc 1 283 3 view .LVU154
+ 281:Core/Src/main.c ****   while (1)
+ 799              		.loc 1 281 9 view .LVU155
+ 800 0002 FEE7     		b	.L32
+ 801              		.cfi_endproc
+ 802              	.LFE45:
+ 804              		.section	.text.SystemClock_Config,"ax",%progbits
+ 805              		.align	1
+ 806              		.global	SystemClock_Config
+ 807              		.syntax unified
+ 808              		.code	16
+ 809              		.thumb_func
+ 811              	SystemClock_Config:
+ 812              	.LFB41:
+ 158:Core/Src/main.c ****   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
+ 813              		.loc 1 158 1 view -0
+ 814              		.cfi_startproc
+ 815              		@ args = 0, pretend = 0, frame = 64
+ 816              		@ frame_needed = 0, uses_anonymous_args = 0
+ 817 0000 00B5     		push	{lr}
+ 818              	.LCFI8:
+ 819              		.cfi_def_cfa_offset 4
+ 820              		.cfi_offset 14, -4
+ 821 0002 91B0     		sub	sp, sp, #68
+ 822              	.LCFI9:
+ 823              		.cfi_def_cfa_offset 72
+ 159:Core/Src/main.c ****   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+ARM GAS  C:\Users\LENOVO~1\AppData\Local\Temp\ccmCCnaC.s 			page 24
+
+
+ 824              		.loc 1 159 3 view .LVU157
+ 159:Core/Src/main.c ****   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+ 825              		.loc 1 159 22 is_stmt 0 view .LVU158
+ 826 0004 3022     		movs	r2, #48
+ 827 0006 0021     		movs	r1, #0
+ 828 0008 04A8     		add	r0, sp, #16
+ 829 000a FFF7FEFF 		bl	memset
+ 830              	.LVL78:
+ 160:Core/Src/main.c **** 
+ 831              		.loc 1 160 3 is_stmt 1 view .LVU159
+ 160:Core/Src/main.c **** 
+ 832              		.loc 1 160 22 is_stmt 0 view .LVU160
+ 833 000e 1022     		movs	r2, #16
+ 834 0010 0021     		movs	r1, #0
+ 835 0012 6846     		mov	r0, sp
+ 836 0014 FFF7FEFF 		bl	memset
+ 837              	.LVL79:
+ 165:Core/Src/main.c ****   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+ 838              		.loc 1 165 3 is_stmt 1 view .LVU161
+ 165:Core/Src/main.c ****   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+ 839              		.loc 1 165 36 is_stmt 0 view .LVU162
+ 840 0018 0223     		movs	r3, #2
+ 841 001a 0493     		str	r3, [sp, #16]
+ 166:Core/Src/main.c ****   RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
+ 842              		.loc 1 166 3 is_stmt 1 view .LVU163
+ 166:Core/Src/main.c ****   RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
+ 843              		.loc 1 166 30 is_stmt 0 view .LVU164
+ 844 001c 013B     		subs	r3, r3, #1
+ 845 001e 0793     		str	r3, [sp, #28]
+ 167:Core/Src/main.c ****   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
+ 846              		.loc 1 167 3 is_stmt 1 view .LVU165
+ 167:Core/Src/main.c ****   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
+ 847              		.loc 1 167 41 is_stmt 0 view .LVU166
+ 848 0020 0F33     		adds	r3, r3, #15
+ 849 0022 0893     		str	r3, [sp, #32]
+ 168:Core/Src/main.c ****   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+ 850              		.loc 1 168 3 is_stmt 1 view .LVU167
+ 169:Core/Src/main.c ****   {
+ 851              		.loc 1 169 3 view .LVU168
+ 169:Core/Src/main.c ****   {
+ 852              		.loc 1 169 7 is_stmt 0 view .LVU169
+ 853 0024 04A8     		add	r0, sp, #16
+ 854 0026 FFF7FEFF 		bl	HAL_RCC_OscConfig
+ 855              	.LVL80:
+ 169:Core/Src/main.c ****   {
+ 856              		.loc 1 169 6 discriminator 1 view .LVU170
+ 857 002a 0028     		cmp	r0, #0
+ 858 002c 0DD1     		bne	.L36
+ 176:Core/Src/main.c ****                               |RCC_CLOCKTYPE_PCLK1;
+ 859              		.loc 1 176 3 is_stmt 1 view .LVU171
+ 176:Core/Src/main.c ****                               |RCC_CLOCKTYPE_PCLK1;
+ 860              		.loc 1 176 31 is_stmt 0 view .LVU172
+ 861 002e 0723     		movs	r3, #7
+ 862 0030 0093     		str	r3, [sp]
+ 178:Core/Src/main.c ****   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+ 863              		.loc 1 178 3 is_stmt 1 view .LVU173
+ 178:Core/Src/main.c ****   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+ARM GAS  C:\Users\LENOVO~1\AppData\Local\Temp\ccmCCnaC.s 			page 25
+
+
+ 864              		.loc 1 178 34 is_stmt 0 view .LVU174
+ 865 0032 0023     		movs	r3, #0
+ 866 0034 0193     		str	r3, [sp, #4]
+ 179:Core/Src/main.c ****   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
+ 867              		.loc 1 179 3 is_stmt 1 view .LVU175
+ 179:Core/Src/main.c ****   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
+ 868              		.loc 1 179 35 is_stmt 0 view .LVU176
+ 869 0036 0293     		str	r3, [sp, #8]
+ 180:Core/Src/main.c **** 
+ 870              		.loc 1 180 3 is_stmt 1 view .LVU177
+ 180:Core/Src/main.c **** 
+ 871              		.loc 1 180 36 is_stmt 0 view .LVU178
+ 872 0038 0393     		str	r3, [sp, #12]
+ 182:Core/Src/main.c ****   {
+ 873              		.loc 1 182 3 is_stmt 1 view .LVU179
+ 182:Core/Src/main.c ****   {
+ 874              		.loc 1 182 7 is_stmt 0 view .LVU180
+ 875 003a 0021     		movs	r1, #0
+ 876 003c 6846     		mov	r0, sp
+ 877 003e FFF7FEFF 		bl	HAL_RCC_ClockConfig
+ 878              	.LVL81:
+ 182:Core/Src/main.c ****   {
+ 879              		.loc 1 182 6 discriminator 1 view .LVU181
+ 880 0042 0028     		cmp	r0, #0
+ 881 0044 03D1     		bne	.L37
+ 186:Core/Src/main.c **** 
+ 882              		.loc 1 186 1 view .LVU182
+ 883 0046 11B0     		add	sp, sp, #68
+ 884              		@ sp needed
+ 885 0048 00BD     		pop	{pc}
+ 886              	.L36:
+ 171:Core/Src/main.c ****   }
+ 887              		.loc 1 171 5 is_stmt 1 view .LVU183
+ 888 004a FFF7FEFF 		bl	Error_Handler
+ 889              	.LVL82:
+ 890              	.L37:
+ 184:Core/Src/main.c ****   }
+ 891              		.loc 1 184 5 view .LVU184
+ 892 004e FFF7FEFF 		bl	Error_Handler
+ 893              	.LVL83:
+ 894              		.cfi_endproc
+ 895              	.LFE41:
+ 897              		.section	.text.main,"ax",%progbits
+ 898              		.align	1
+ 899              		.global	main
+ 900              		.syntax unified
+ 901              		.code	16
+ 902              		.thumb_func
+ 904              	main:
+ 905              	.LFB40:
+  87:Core/Src/main.c ****   /* USER CODE BEGIN 1 */
+ 906              		.loc 1 87 1 view -0
+ 907              		.cfi_startproc
+ 908              		@ Volatile: function does not return.
+ 909              		@ args = 0, pretend = 0, frame = 0
+ 910              		@ frame_needed = 0, uses_anonymous_args = 0
+ 911 0000 70B5     		push	{r4, r5, r6, lr}
+ARM GAS  C:\Users\LENOVO~1\AppData\Local\Temp\ccmCCnaC.s 			page 26
+
+
+ 912              	.LCFI10:
+ 913              		.cfi_def_cfa_offset 16
+ 914              		.cfi_offset 4, -16
+ 915              		.cfi_offset 5, -12
+ 916              		.cfi_offset 6, -8
+ 917              		.cfi_offset 14, -4
+  95:Core/Src/main.c **** 
+ 918              		.loc 1 95 3 view .LVU186
+ 919 0002 FFF7FEFF 		bl	HAL_Init
+ 920              	.LVL84:
+ 102:Core/Src/main.c **** 
+ 921              		.loc 1 102 3 view .LVU187
+ 922 0006 FFF7FEFF 		bl	SystemClock_Config
+ 923              	.LVL85:
+ 109:Core/Src/main.c ****   /* USER CODE BEGIN 2 */
+ 924              		.loc 1 109 3 view .LVU188
+ 925 000a FFF7FEFF 		bl	MX_GPIO_Init
+ 926              	.LVL86:
+ 112:Core/Src/main.c **** 
+ 927              		.loc 1 112 3 view .LVU189
+ 928 000e 144C     		ldr	r4, .L40
+ 929 0010 0122     		movs	r2, #1
+ 930 0012 0121     		movs	r1, #1
+ 931 0014 2000     		movs	r0, r4
+ 932 0016 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 933              	.LVL87:
+ 115:Core/Src/main.c ****   
+ 934              		.loc 1 115 3 view .LVU190
+ 115:Core/Src/main.c ****   
+ 935              		.loc 1 115 16 is_stmt 0 view .LVU191
+ 936 001a FFF7FEFF 		bl	HAL_GetTick
+ 937              	.LVL88:
+ 115:Core/Src/main.c ****   
+ 938              		.loc 1 115 14 discriminator 1 view .LVU192
+ 939 001e 114D     		ldr	r5, .L40+4
+ 940 0020 2860     		str	r0, [r5]
+ 119:Core/Src/main.c ****   
+ 941              		.loc 1 119 3 is_stmt 1 view .LVU193
+ 119:Core/Src/main.c ****   
+ 942              		.loc 1 119 15 is_stmt 0 view .LVU194
+ 943 0022 6422     		movs	r2, #100
+ 944 0024 8021     		movs	r1, #128
+ 945 0026 8020     		movs	r0, #128
+ 946 0028 FFF7FEFF 		bl	calculate_mandelbrot_fixed_point_arithmetic
+ 947              	.LVL89:
+ 119:Core/Src/main.c ****   
+ 948              		.loc 1 119 13 discriminator 1 view .LVU195
+ 949 002c 0E4B     		ldr	r3, .L40+8
+ 950 002e 1860     		str	r0, [r3]
+ 951 0030 5960     		str	r1, [r3, #4]
+ 123:Core/Src/main.c ****   
+ 952              		.loc 1 123 3 is_stmt 1 view .LVU196
+ 123:Core/Src/main.c ****   
+ 953              		.loc 1 123 14 is_stmt 0 view .LVU197
+ 954 0032 FFF7FEFF 		bl	HAL_GetTick
+ 955              	.LVL90:
+ 123:Core/Src/main.c ****   
+ARM GAS  C:\Users\LENOVO~1\AppData\Local\Temp\ccmCCnaC.s 			page 27
+
+
+ 956              		.loc 1 123 12 discriminator 1 view .LVU198
+ 957 0036 0D4B     		ldr	r3, .L40+12
+ 958 0038 1860     		str	r0, [r3]
+ 127:Core/Src/main.c ****   
+ 959              		.loc 1 127 3 is_stmt 1 view .LVU199
+ 127:Core/Src/main.c ****   
+ 960              		.loc 1 127 29 is_stmt 0 view .LVU200
+ 961 003a 2B68     		ldr	r3, [r5]
+ 962 003c C01A     		subs	r0, r0, r3
+ 127:Core/Src/main.c ****   
+ 963              		.loc 1 127 18 view .LVU201
+ 964 003e 0C4B     		ldr	r3, .L40+16
+ 965 0040 1860     		str	r0, [r3]
+ 131:Core/Src/main.c **** 
+ 966              		.loc 1 131 3 is_stmt 1 view .LVU202
+ 967 0042 0122     		movs	r2, #1
+ 968 0044 0221     		movs	r1, #2
+ 969 0046 2000     		movs	r0, r4
+ 970 0048 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 971              	.LVL91:
+ 134:Core/Src/main.c **** 
+ 972              		.loc 1 134 3 view .LVU203
+ 973 004c FA20     		movs	r0, #250
+ 974 004e 8000     		lsls	r0, r0, #2
+ 975 0050 FFF7FEFF 		bl	HAL_Delay
+ 976              	.LVL92:
+ 137:Core/Src/main.c ****   
+ 977              		.loc 1 137 3 view .LVU204
+ 978 0054 0022     		movs	r2, #0
+ 979 0056 0321     		movs	r1, #3
+ 980 0058 2000     		movs	r0, r4
+ 981 005a FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 982              	.LVL93:
+ 983              	.L39:
+ 144:Core/Src/main.c ****   {
+ 984              		.loc 1 144 3 view .LVU205
+ 149:Core/Src/main.c ****   /* USER CODE END 3 */
+ 985              		.loc 1 149 3 view .LVU206
+ 144:Core/Src/main.c ****   {
+ 986              		.loc 1 144 9 view .LVU207
+ 987 005e FEE7     		b	.L39
+ 988              	.L41:
+ 989              		.align	2
+ 990              	.L40:
+ 991 0060 00040048 		.word	1207960576
+ 992 0064 00000000 		.word	start_time
+ 993 0068 00000000 		.word	checksum
+ 994 006c 00000000 		.word	end_time
+ 995 0070 00000000 		.word	execution_time
+ 996              		.cfi_endproc
+ 997              	.LFE40:
+ 999              		.global	maxIter
+ 1000              		.section	.bss.maxIter,"aw",%nobits
+ 1001              		.align	2
+ 1004              	maxIter:
+ 1005 0000 00000000 		.space	4
+ 1006              		.global	height
+ARM GAS  C:\Users\LENOVO~1\AppData\Local\Temp\ccmCCnaC.s 			page 28
+
+
+ 1007              		.section	.bss.height,"aw",%nobits
+ 1008              		.align	2
+ 1011              	height:
+ 1012 0000 00000000 		.space	4
+ 1013              		.global	width
+ 1014              		.section	.bss.width,"aw",%nobits
+ 1015              		.align	2
+ 1018              	width:
+ 1019 0000 00000000 		.space	4
+ 1020              		.global	checksum
+ 1021              		.section	.bss.checksum,"aw",%nobits
+ 1022              		.align	3
+ 1025              	checksum:
+ 1026 0000 00000000 		.space	8
+ 1026      00000000 
+ 1027              		.global	execution_time
+ 1028              		.section	.bss.execution_time,"aw",%nobits
+ 1029              		.align	2
+ 1032              	execution_time:
+ 1033 0000 00000000 		.space	4
+ 1034              		.global	end_time
+ 1035              		.section	.bss.end_time,"aw",%nobits
+ 1036              		.align	2
+ 1039              	end_time:
+ 1040 0000 00000000 		.space	4
+ 1041              		.global	start_time
+ 1042              		.section	.bss.start_time,"aw",%nobits
+ 1043              		.align	2
+ 1046              	start_time:
+ 1047 0000 00000000 		.space	4
+ 1048              		.text
+ 1049              	.Letext0:
+ 1050              		.file 3 "C:\\ST\\STM32CubeIDE_1.19.0\\STM32CubeIDE\\plugins\\com.st.stm32cube.ide.mcu.externaltool
+ 1051              		.file 4 "C:\\ST\\STM32CubeIDE_1.19.0\\STM32CubeIDE\\plugins\\com.st.stm32cube.ide.mcu.externaltool
+ 1052              		.file 5 "Drivers/CMSIS/Device/ST/STM32F0xx/Include/stm32f051x8.h"
+ 1053              		.file 6 "Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_def.h"
+ 1054              		.file 7 "Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_rcc.h"
+ 1055              		.file 8 "Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_gpio.h"
+ 1056              		.file 9 "Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal.h"
+ 1057              		.file 10 "<built-in>"
+ARM GAS  C:\Users\LENOVO~1\AppData\Local\Temp\ccmCCnaC.s 			page 29
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 main.c
+C:\Users\LENOVO~1\AppData\Local\Temp\ccmCCnaC.s:19     .text.MX_GPIO_Init:00000000 $t
+C:\Users\LENOVO~1\AppData\Local\Temp\ccmCCnaC.s:24     .text.MX_GPIO_Init:00000000 MX_GPIO_Init
+C:\Users\LENOVO~1\AppData\Local\Temp\ccmCCnaC.s:114    .text.MX_GPIO_Init:0000005c $d
+C:\Users\LENOVO~1\AppData\Local\Temp\ccmCCnaC.s:122    .text.calculate_mandelbrot_fixed_point_arithmetic:00000000 $t
+C:\Users\LENOVO~1\AppData\Local\Temp\ccmCCnaC.s:128    .text.calculate_mandelbrot_fixed_point_arithmetic:00000000 calculate_mandelbrot_fixed_point_arithmetic
+C:\Users\LENOVO~1\AppData\Local\Temp\ccmCCnaC.s:426    .text.calculate_mandelbrot_fixed_point_arithmetic:0000015c $d
+C:\Users\LENOVO~1\AppData\Local\Temp\ccmCCnaC.s:446    .text.calculate_mandelbrot_double:00000000 $t
+C:\Users\LENOVO~1\AppData\Local\Temp\ccmCCnaC.s:452    .text.calculate_mandelbrot_double:00000000 calculate_mandelbrot_double
+C:\Users\LENOVO~1\AppData\Local\Temp\ccmCCnaC.s:759    .text.calculate_mandelbrot_double:00000160 $d
+C:\Users\LENOVO~1\AppData\Local\Temp\ccmCCnaC.s:767    .text.Error_Handler:00000000 $t
+C:\Users\LENOVO~1\AppData\Local\Temp\ccmCCnaC.s:773    .text.Error_Handler:00000000 Error_Handler
+C:\Users\LENOVO~1\AppData\Local\Temp\ccmCCnaC.s:805    .text.SystemClock_Config:00000000 $t
+C:\Users\LENOVO~1\AppData\Local\Temp\ccmCCnaC.s:811    .text.SystemClock_Config:00000000 SystemClock_Config
+C:\Users\LENOVO~1\AppData\Local\Temp\ccmCCnaC.s:898    .text.main:00000000 $t
+C:\Users\LENOVO~1\AppData\Local\Temp\ccmCCnaC.s:904    .text.main:00000000 main
+C:\Users\LENOVO~1\AppData\Local\Temp\ccmCCnaC.s:991    .text.main:00000060 $d
+C:\Users\LENOVO~1\AppData\Local\Temp\ccmCCnaC.s:1046   .bss.start_time:00000000 start_time
+C:\Users\LENOVO~1\AppData\Local\Temp\ccmCCnaC.s:1025   .bss.checksum:00000000 checksum
+C:\Users\LENOVO~1\AppData\Local\Temp\ccmCCnaC.s:1039   .bss.end_time:00000000 end_time
+C:\Users\LENOVO~1\AppData\Local\Temp\ccmCCnaC.s:1032   .bss.execution_time:00000000 execution_time
+C:\Users\LENOVO~1\AppData\Local\Temp\ccmCCnaC.s:1004   .bss.maxIter:00000000 maxIter
+C:\Users\LENOVO~1\AppData\Local\Temp\ccmCCnaC.s:1001   .bss.maxIter:00000000 $d
+C:\Users\LENOVO~1\AppData\Local\Temp\ccmCCnaC.s:1011   .bss.height:00000000 height
+C:\Users\LENOVO~1\AppData\Local\Temp\ccmCCnaC.s:1008   .bss.height:00000000 $d
+C:\Users\LENOVO~1\AppData\Local\Temp\ccmCCnaC.s:1018   .bss.width:00000000 width
+C:\Users\LENOVO~1\AppData\Local\Temp\ccmCCnaC.s:1015   .bss.width:00000000 $d
+C:\Users\LENOVO~1\AppData\Local\Temp\ccmCCnaC.s:1022   .bss.checksum:00000000 $d
+C:\Users\LENOVO~1\AppData\Local\Temp\ccmCCnaC.s:1029   .bss.execution_time:00000000 $d
+C:\Users\LENOVO~1\AppData\Local\Temp\ccmCCnaC.s:1036   .bss.end_time:00000000 $d
+C:\Users\LENOVO~1\AppData\Local\Temp\ccmCCnaC.s:1043   .bss.start_time:00000000 $d
+
+UNDEFINED SYMBOLS
+memset
+HAL_GPIO_WritePin
+HAL_GPIO_Init
+__aeabi_lmul
+__aeabi_ldivmod
+__aeabi_idiv
+__aeabi_i2d
+__aeabi_dmul
+__aeabi_dsub
+__aeabi_dadd
+__aeabi_dcmpgt
+__aeabi_dcmple
+__aeabi_ul2d
+__aeabi_d2ulz
+HAL_RCC_OscConfig
+HAL_RCC_ClockConfig
+HAL_Init
+HAL_GetTick
+HAL_Delay
